@@ -1,0 +1,7 @@
+package utils
+
+const (
+	RECOMMENDS  = "RECOMMENDS"
+	ACTED_IN    = "ACTED_IN"
+	CATEGORIZED = "CATEGORIZED"
+)
