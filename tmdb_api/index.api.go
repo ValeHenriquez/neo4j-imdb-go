@@ -2,12 +2,16 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"sort"
 	"strconv"
 
 	"github.com/ValeHenriquez/neo4j-imdb-go/models"
 	"github.com/ValeHenriquez/neo4j-imdb-go/utils"
 )
+
+var CANT_ACTORS = 5
+var CANT_PAGES = 1
 
 func getMovieDetailsById(id int64) (models.Movie, []models.Actor, []models.Genre, error) {
 	addedURL := "/movie/" + strconv.FormatInt(id, 10) + "?append_to_response=credits&language=en-US"
@@ -24,7 +28,7 @@ func getMovieDetailsById(id int64) (models.Movie, []models.Actor, []models.Genre
 	}
 
 	director := findCrewMember(data.Credits.Crew, "Director")
-	actors := getActors(data.Credits.Cast, 5)
+	actors := getActors(data.Credits.Cast, CANT_ACTORS)
 	genres := getGenres(data.Genres)
 
 	movie := models.Movie{
@@ -73,8 +77,7 @@ func findCrewMember(crew []Crew, job string) string {
 }
 
 func getPopularMoviesIds() ([]int64, error) {
-	addedURL := "/movie/popular?language=en-US&page=1"
-
+	addedURL := fmt.Sprintf("/movie/popular?language=en-US&page=%d", CANT_PAGES)
 	res, err := utils.MakeRequest(addedURL)
 	if err != nil {
 		return nil, err

@@ -58,7 +58,7 @@ func Create(obj interface{}) error {
 		return err
 	}
 
-	fmt.Println("Created node in database")
+	//fmt.Println("Created node in database")
 	//fmt.Printf("Created %v nodes in %+v.\n", result.Summary.Counters().NodesCreated(), result.Summary.ResultAvailableAfter())
 	return err
 }
@@ -134,7 +134,6 @@ func GetRelationships(obj interface{}, relation_type string) ([]map[string]inter
 	params := map[string]interface{}{
 		"Id": objValue.FieldByName("Id").Interface(),
 	}
-
 	result, err := executeQuery(query, params)
 
 	if err != nil {

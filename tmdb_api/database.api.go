@@ -6,7 +6,7 @@ import (
 	"github.com/ValeHenriquez/neo4j-imdb-go/utils"
 )
 
-func FillDB() error {
+func fillDB() error {
 	idsPopular, err := getPopularMoviesIds()
 	if err != nil {
 		return err
