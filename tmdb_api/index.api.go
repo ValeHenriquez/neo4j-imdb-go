@@ -13,6 +13,68 @@ import (
 var CANT_ACTORS = 5
 var CANT_PAGES = 1
 
+func getSeriesDetailsById(id int64) (models.Serie, []models.Actor, []models.Genre, error) {
+	addedURL := "/tv/" + strconv.FormatInt(id, 10) + "?append_to_response=credits&language=en-US"
+
+	res, err := utils.MakeRequest(addedURL)
+	if err != nil {
+		return models.Serie{}, nil, nil, err
+	}
+	defer res.Body.Close()
+
+	var data SerieResponse
+	if err := json.NewDecoder(res.Body).Decode(&data); err != nil {
+		return models.Serie{}, nil, nil, err
+	}
+
+	createdBy := findCreatedBy(data.CreatedBy)
+	actors := getActors(data.Credits.Cast, CANT_ACTORS)
+	genres := getGenres(data.Genres)
+
+	series := models.Serie{
+		Id:               data.Id,
+		Name:             data.Name,
+		Overview:         data.Overview,
+		CreatedBy:        createdBy,
+		BackdropPath:     data.BackdropPath,
+		PosterPath:       data.PosterPath,
+		FirstAirDate:     data.FirstAirDate,
+		NumberOfEpisodes: data.NumberOfEpisodes,
+		NumberOfSeasons:  data.NumberOfSeasons,
+	}
+
+	return series, actors, genres, nil
+}
+
+func findCreatedBy(createdBy []CreatedBy) string {
+	for _, creator := range createdBy {
+		return creator.Name
+	}
+	return ""
+}
+
+func getPopularSeriesIds() ([]int64, error) {
+	addedURL := fmt.Sprintf("/tv/popular?language=en-US&page=%d", CANT_PAGES)
+	res, err := utils.MakeRequest(addedURL)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	var data PopularSeriesResponse
+	if err := json.NewDecoder(res.Body).Decode(&data); err != nil {
+		return nil, err
+	}
+
+	ids := make([]int64, len(data.Results))
+	for i, movie := range data.Results {
+		ids[i] = movie.Id
+	}
+
+	return ids, nil
+}
+
+
 func getMovieDetailsById(id int64) (models.Movie, []models.Actor, []models.Genre, error) {
 	addedURL := "/movie/" + strconv.FormatInt(id, 10) + "?append_to_response=credits&language=en-US"
 
@@ -114,6 +176,28 @@ func getMovieRecommendationsIds(id int64) ([]int64, error) {
 	ids := make([]int64, len(data.Results))
 	for i, movie := range data.Results {
 		ids[i] = movie.Id
+	}
+
+	return ids, nil
+}
+
+func getSerieRecommendationsIds(id int64) ([]int64, error) {
+	addedURL := "/tv/" + strconv.FormatInt(id, 10) + "/recommendations?language=en-US&page=1"
+
+	res, err := utils.MakeRequest(addedURL)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	var data SerieRecommendationsResponse
+	if err := json.NewDecoder(res.Body).Decode(&data); err != nil {
+		return nil, err
+	}
+
+	ids := make([]int64, len(data.Results))
+	for i, serie := range data.Results {
+		ids[i] = serie.Id
 	}
 
 	return ids, nil
