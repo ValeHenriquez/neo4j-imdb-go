@@ -179,7 +179,6 @@ func getMovieRecommendationsIds(id int64) ([]int64, error) {
 		ids[i] = movie.Id
 	}
 
-	fmt.Println("IDS from get movie recommendations", ids)
 	return ids, nil
 }
 

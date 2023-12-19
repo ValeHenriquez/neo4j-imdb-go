@@ -43,7 +43,7 @@ func GetRandom(obj interface{}) (map[string]interface{}, error) {
 	}
 
 	if len(props) == 0 {
-		return nil, nil 
+		return nil, nil
 	}
 
 	return props, nil

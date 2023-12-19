@@ -54,6 +54,8 @@ func fillDBWithRecommendationsSerie(serieID int64) error {
 		return err
 	}
 
+	fillDBSerie(mainSerie, mainActors, mainGenres)
+
 	if err := fillDBCategory(func() ([]int64, error) { return getSerieRecommendationsIds(serieID) }, func(id int64) error {
 		serie, actors, genres, err := getSeriesDetailsById(id)
 		if err != nil {
@@ -67,7 +69,7 @@ func fillDBWithRecommendationsSerie(serieID int64) error {
 		return err
 	}
 
-	return fillDBSerie(mainSerie, mainActors, mainGenres)
+	return nil
 }
 
 func fillDBSerie(serie models.Serie, actors []models.Actor, genres []models.Genre) error {
@@ -78,8 +80,6 @@ func fillDBSerie(serie models.Serie, actors []models.Actor, genres []models.Genr
 }
 
 func fillDBMovie(movie models.Movie, actors []models.Actor, genres []models.Genre) error {
-
-	fmt.Println("Creatin relations...", movie.Title, "with", len(actors), "actors and", len(genres), "genres")
 	if err := createCategoryAndRelations(&movie, actors, genres, utils.ACTED_IN, utils.CATEGORIZED); err != nil {
 		return err
 	}
@@ -114,27 +114,27 @@ func createCategoryAndRelations(category interface{}, actors []models.Actor, gen
 
 func fillDBWithRecommendationsMovie(movieID int64) error {
 	mainMovie, mainActors, mainGenres, err := getMovieDetailsById(movieID)
-	fmt.Println("Filling movie to be:", mainMovie.Title)
-
 	if err != nil {
 		return err
 	}
 
+	if err := fillDBMovie(mainMovie, mainActors, mainGenres); err != nil {
+		return err
+	}
+
 	if err := fillDBCategory(func() ([]int64, error) { return getMovieRecommendationsIds(movieID) }, func(id int64) error {
-
 		movie, actors, genres, err := getMovieDetailsById(id)
-		fmt.Println("Filling movie recommendation:", movie.Title)
-
 		if err != nil {
 			return err
 		}
 		if err := fillDBMovie(movie, actors, genres); err != nil {
 			return err
 		}
+
 		return database.CreateBiRelation(mainMovie, movie, utils.RECOMMENDS)
 	}); err != nil {
 		return err
 	}
 
-	return fillDBMovie(mainMovie, mainActors, mainGenres)
+	return nil
 }

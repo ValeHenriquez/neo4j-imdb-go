@@ -2,7 +2,6 @@ package movies
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/ValeHenriquez/neo4j-imdb-go/database"
 	"github.com/ValeHenriquez/neo4j-imdb-go/models"
@@ -147,17 +146,16 @@ func getMovieRecomendations(id int64) ([]models.MovieResponse, error) {
 	if err != nil || movieData == nil {
 		return nil, errors.New("movie not found")
 	}
-	fmt.Println("MOVIE DATA", movieData)
+
 	movie, _, _, err := getMovieData(movieData)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("MOVIE", movie)
+
 	recomendationsData, err := database.GetRelationships(movie, utils.RECOMMENDS)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("RECOMENDATIONS DATA", recomendationsData)
 
 	for _, d := range recomendationsData {
 		movie, genres, actors, err := getMovieData(d)
@@ -181,7 +179,6 @@ func getMovieRecomendations(id int64) ([]models.MovieResponse, error) {
 		movies = append(movies, movieResponse)
 	}
 
-	fmt.Println("MOVIES FROM SERVICE", movies)
 	if len(movies) == 0 {
 		return []models.MovieResponse{}, nil
 	}
