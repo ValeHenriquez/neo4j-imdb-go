@@ -74,7 +74,6 @@ func getPopularSeriesIds() ([]int64, error) {
 	return ids, nil
 }
 
-
 func getMovieDetailsById(id int64) (models.Movie, []models.Actor, []models.Genre, error) {
 	addedURL := "/movie/" + strconv.FormatInt(id, 10) + "?append_to_response=credits&language=en-US"
 
@@ -99,6 +98,7 @@ func getMovieDetailsById(id int64) (models.Movie, []models.Actor, []models.Genre
 		Overview:     data.Overview,
 		Director:     director,
 		BackdropPath: data.BackdropPath,
+		Runtime:      data.Runtime,
 		PosterPath:   data.PosterPath,
 		ReleaseDate:  data.ReleaseDate,
 	}
@@ -160,7 +160,7 @@ func getPopularMoviesIds() ([]int64, error) {
 }
 
 func getMovieRecommendationsIds(id int64) ([]int64, error) {
-	addedURL := "/movie/" + strconv.FormatInt(id, 10) + "/recommendations?language=en-US&page=1"
+	addedURL := "/movie/" + strconv.FormatInt(id, 10) + "/similar?language=en-US&page=1"
 
 	res, err := utils.MakeRequest(addedURL)
 	if err != nil {
@@ -169,6 +169,7 @@ func getMovieRecommendationsIds(id int64) ([]int64, error) {
 	defer res.Body.Close()
 
 	var data MovieRecommendationsResponse
+
 	if err := json.NewDecoder(res.Body).Decode(&data); err != nil {
 		return nil, err
 	}
@@ -178,11 +179,12 @@ func getMovieRecommendationsIds(id int64) ([]int64, error) {
 		ids[i] = movie.Id
 	}
 
+	fmt.Println("IDS from get movie recommendations", ids)
 	return ids, nil
 }
 
 func getSerieRecommendationsIds(id int64) ([]int64, error) {
-	addedURL := "/tv/" + strconv.FormatInt(id, 10) + "/recommendations?language=en-US&page=1"
+	addedURL := "/tv/" + strconv.FormatInt(id, 10) + "/similar?language=en-US&page=1"
 
 	res, err := utils.MakeRequest(addedURL)
 	if err != nil {

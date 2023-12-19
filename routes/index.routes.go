@@ -13,6 +13,9 @@ func Setup(app *fiber.App) {
 		return c.SendString("Hello, Server Running 👋!")
 	})
 
+	//Ruta Random para el billboard
+	app.Get("/random", movies.GetRandom)
+
 	//Rutas para las peliculas
 	app.Get("/movies", movies.GetMovies)
 	app.Get("/movies/:id", movies.GetMovie)

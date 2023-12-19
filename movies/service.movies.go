@@ -2,11 +2,41 @@ package movies
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/ValeHenriquez/neo4j-imdb-go/database"
 	"github.com/ValeHenriquez/neo4j-imdb-go/models"
 	"github.com/ValeHenriquez/neo4j-imdb-go/utils"
 )
+
+func getRandomMovie() (models.MovieResponse, error) {
+	var movieResponse models.MovieResponse
+
+	dataMovie, err := database.GetRandom(models.Movie{})
+	if err != nil {
+		return models.MovieResponse{}, err
+	}
+
+	movie, genres, actors, err := getMovieData(dataMovie)
+	if err != nil {
+		return models.MovieResponse{}, err
+	}
+
+	movieResponse = models.MovieResponse{
+		Id:           movie.Id,
+		Title:        movie.Title,
+		Overview:     movie.Overview,
+		Director:     movie.Director,
+		BackdropPath: movie.BackdropPath,
+		Runtime:      movie.Runtime,
+		PosterPath:   movie.PosterPath,
+		ReleaseDate:  movie.ReleaseDate,
+		Genres:       genres,
+		Actors:       actors,
+	}
+
+	return movieResponse, nil
+}
 
 func getMovieData(movieData map[string]interface{}) (models.Movie, []models.Genre, []models.Actor, error) {
 	movie := models.Movie{
@@ -15,6 +45,7 @@ func getMovieData(movieData map[string]interface{}) (models.Movie, []models.Genr
 		Overview:     movieData["Overview"].(string),
 		Director:     movieData["Director"].(string),
 		BackdropPath: movieData["BackdropPath"].(string),
+		Runtime:      movieData["Runtime"].(int64),
 		PosterPath:   movieData["PosterPath"].(string),
 		ReleaseDate:  movieData["ReleaseDate"].(string),
 	}
@@ -67,6 +98,7 @@ func getAllMovies() ([]models.MovieResponse, error) {
 			Overview:     movie.Overview,
 			Director:     movie.Director,
 			BackdropPath: movie.BackdropPath,
+			Runtime:      movie.Runtime,
 			PosterPath:   movie.PosterPath,
 			ReleaseDate:  movie.ReleaseDate,
 			Genres:       genres,
@@ -98,6 +130,7 @@ func getMovieById(id int64) (models.MovieResponse, error) {
 		Overview:     movie.Overview,
 		Director:     movie.Director,
 		BackdropPath: movie.BackdropPath,
+		Runtime:      movie.Runtime,
 		PosterPath:   movie.PosterPath,
 		ReleaseDate:  movie.ReleaseDate,
 		Genres:       genres,
@@ -114,16 +147,17 @@ func getMovieRecomendations(id int64) ([]models.MovieResponse, error) {
 	if err != nil || movieData == nil {
 		return nil, errors.New("movie not found")
 	}
-
+	fmt.Println("MOVIE DATA", movieData)
 	movie, _, _, err := getMovieData(movieData)
 	if err != nil {
 		return nil, err
 	}
-
+	fmt.Println("MOVIE", movie)
 	recomendationsData, err := database.GetRelationships(movie, utils.RECOMMENDS)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("RECOMENDATIONS DATA", recomendationsData)
 
 	for _, d := range recomendationsData {
 		movie, genres, actors, err := getMovieData(d)
@@ -137,6 +171,7 @@ func getMovieRecomendations(id int64) ([]models.MovieResponse, error) {
 			Overview:     movie.Overview,
 			Director:     movie.Director,
 			BackdropPath: movie.BackdropPath,
+			Runtime:      movie.Runtime,
 			PosterPath:   movie.PosterPath,
 			ReleaseDate:  movie.ReleaseDate,
 			Genres:       genres,
@@ -144,6 +179,11 @@ func getMovieRecomendations(id int64) ([]models.MovieResponse, error) {
 		}
 
 		movies = append(movies, movieResponse)
+	}
+
+	fmt.Println("MOVIES FROM SERVICE", movies)
+	if len(movies) == 0 {
+		return []models.MovieResponse{}, nil
 	}
 
 	return movies, nil

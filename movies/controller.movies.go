@@ -8,6 +8,15 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+func GetRandom(c *fiber.Ctx) error {
+	fmt.Println("Getting Random Movie")
+	movie, err := getRandomMovie()
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Status(http.StatusOK).JSON(movie)
+}
+
 func GetMovies(c *fiber.Ctx) error {
 	fmt.Println("Getting Movies")
 	movies, err := getAllMovies()
@@ -38,10 +47,10 @@ func GetMovieRecomendations(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	movie, err := getMovieRecomendations(id)
+	movies, err := getMovieRecomendations(id)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	return c.Status(http.StatusOK).JSON(movie)
+	return c.Status(http.StatusOK).JSON(movies)
 }

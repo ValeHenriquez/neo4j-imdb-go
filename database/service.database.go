@@ -24,6 +24,31 @@ func executeQuery(query string, params map[string]interface{}) (*neo4j.EagerResu
 	return result, nil
 }
 
+func GetRandom(obj interface{}) (map[string]interface{}, error) {
+	objType := reflect.TypeOf(obj)
+
+	query := fmt.Sprintf("MATCH (n:%s) RETURN n ORDER BY rand() LIMIT 1", objType.Name())
+
+	result, err := executeQuery(query, nil)
+
+	if err != nil {
+		fmt.Println("ERROR EN EXECUTE GETRANDOM QUERY", err)
+		return nil, err
+	}
+
+	var props map[string]interface{}
+	for _, record := range result.Records {
+		node, _ := record.Get("n")
+		props = node.(neo4j.Node).Props
+	}
+
+	if len(props) == 0 {
+		return nil, nil 
+	}
+
+	return props, nil
+}
+
 func Create(obj interface{}) error {
 	objValue := reflect.ValueOf(obj)
 

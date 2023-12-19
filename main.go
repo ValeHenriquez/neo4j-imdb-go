@@ -23,7 +23,11 @@ func main() {
 	fmt.Println("Database connected")
 
 	app := fiber.New()
-	app.Use(cors.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowHeaders: "Origin, Content-Type, Accept",
+		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
+	}))
 
 	portString := os.Getenv("PORT")
 	if portString == "" {
